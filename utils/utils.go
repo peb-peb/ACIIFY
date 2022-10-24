@@ -55,7 +55,7 @@ func remap(mean, start1, stop1, start2, stop2 float64) int {
 func ConvertImageToArray(img image.Image, maxx int, maxy int, color bool) [][]Pixel {
 	ImageArray := make([][]Pixel, maxy)
 	for y := 0; y < maxy; y++ {
-		ImageArray[y] = make([]Pixel, maxy)
+		ImageArray[y] = make([]Pixel, maxx)
 		for x := 0; x < maxx; x++ {
 			var tempPixel Pixel
 			r, g, b, a := img.At(x, y).RGBA()
