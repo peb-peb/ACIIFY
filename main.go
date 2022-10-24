@@ -1,56 +1,58 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"image"
-	"image/color"
+	_ "image/jpeg"
 	_ "image/png"
-	"os"
+
+	"github.com/peb-peb/aciify/utils"
 )
 
-func loadImage(filePath string) (image.Image, error) {
-	f, err := os.Open(filePath)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	image, _, err := image.Decode(f)
-	return image, err
-}
+var Filename string
+var Ratio float64
+var Color bool
+var Pixelate bool
 
-func grayScale(c color.Color) int {
-	// get the RGB value of the pixel
-	r, g, b, _ := c.RGBA()
-	// convert RGB to grayscale
-	return int(0.299*float64(r) + 0.587*float64(g) + 0.114*float64(b))
-}
+var MaxX, MaxY uint
 
-func avgPixel(img image.Image, x, y, w, h int) int {
-	cnt, sum, max := 0, 0, img.Bounds().Max
-	for i := x; i < x+w && i < max.X; i++ {
-		for j := y; j < y+h && j < max.Y; j++ {
-			sum += grayScale(img.At(i, j))
-			cnt++
-		}
-	}
-	return sum / cnt
+// var ImageArray *[][]utils.Pixel
+
+func init() {
+	flag.StringVar(&Filename, "f", "", "Image Path to Convert")
+	flag.Float64Var(&Ratio, "r", 1, "Ratio to Scale thegiven Image")
+	flag.BoolVar(&Color, "c", false, "Display ASCII art in color")
+	flag.BoolVar(&Pixelate, "p", false, "Display Pixelated art")
+	flag.Usage = usage
 }
 
 func main() {
-	img, err := loadImage("./data/go_logo.png")
+	flag.Parse()
+
+	img, err := utils.LoadImage(Filename)
 	if err != nil {
 		panic(err)
 	}
 
-	ramp := " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
-	// ramp := " .:-=+*#%@"
-	imgMaxBounds := img.Bounds().Max
-	scaleX, scaleY := 40, 20
-	for y := 0; y < imgMaxBounds.Y; y += scaleX {
-		for x := 0; x < imgMaxBounds.X; x += scaleY {
-			c := avgPixel(img, x, y, scaleX, scaleY)
-			fmt.Print(string(ramp[len(ramp)*c/65536]))
-		}
-		fmt.Println()
+	bounds := img.Bounds()
+	MaxX = uint(float64(bounds.Max.X) * Ratio)
+	MaxY = uint(float64(bounds.Max.Y) * Ratio)
+	if Ratio != 1 {
+		img = utils.ResizeImage(img, MaxX, MaxY)
 	}
+
+	ImageArray := utils.ConvertImageToArray(img, int(MaxX), int(MaxY), Color)
+
+	// fmt.Println(ImageArray, bounds)
+	utils.PrintASCIIImage(ImageArray, int(MaxX), int(MaxY), Color, Pixelate)
+
+}
+
+// Custom usage message for flag
+// printed upon error or -help
+func usage() {
+	fmt.Printf("usage: aciify --filename\n\n")
+	fmt.Printf("options:\n")
+	fmt.Printf("  -help  \n\tshow this help message and exit\n")
+	flag.PrintDefaults()
 }
