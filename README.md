@@ -45,11 +45,20 @@ Specify path to file (jpeg, png) you want to convert into ASCII art.
 ```bash
 go run ./main.go -f ./data/<image>
 ```
+> NOTE:./data/ is the folder within the project folder you can add images there or change that as well refer Example 2
 
 Example:
 ```bash
 go run ./main.go -f ./data/gradient.png
 ```
+
+Example 2 Another folder from your pc:
+
+```bash
+go run ./main.go -f ./hacktober/2022 Hacktoberfest Event Kit/Email Banners
+```
+
+
 
 > NOTE: Most of the time, running without ratio results in very large ASCII arts. So, always try with `-r 0.1` flag.
 
